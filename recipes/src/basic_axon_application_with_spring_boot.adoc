@@ -1,0 +1,73 @@
+= Recipe - Axon Framework in a Spring Boot application
+
+This recipe gives the basic steps for creating an Axon Framework based application with the use of Spring Boot. For the recipe creating an Axon Framework based application without the use of Spring Boot, go http://www.axoniq.io[here]
+
+This recipe will focus on the implementation of the application and not the concepts were the Axon Framework is based on. For the concepts of Axon go to the <Axon Framework reference guide>
+
+Small background on the use case of the example application. Axon Framework has a good usecase in the world of banking. Keeping an audit log of transactions, bla bla bla
+
+
+
+
+=== General
+- Cooks in: 30 minutes
+- Difficulty: easy
+
+=== Ingredients
+* *Dependencies*
+- Spring Boot
+- Axon Framework v3.0.6
+- Spring Boot starter for Axon Framework
+- Kotlin
+
+* *Axon Framework components*
+- Aggregate
+- EventHandlers
+- CommandHandlers
+
+=== Method
+
+1. Set up the application at Spring 
+- start.spring.io
+- Fill in properties of the application (name, package, etc.)
+- Download the project from start.spring.io and open in your IDE
+
+2. Add dependencies for Axon Framework
+```
+<dependency>
+    <groupId>org.axonframework</groupId>
+    <artifactId>axon-spring-boot-starter</artifactId>
+    <version>3.0.6</version>
+</dependency>
+```
+
+X. Run the application, if everything is done as explained. The Spring Boot application should just run
+```
+2017-10-26 18:01:22.755  INFO 5602 --- [           main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase -2147482648
+2017-10-26 18:01:22.759  INFO 5602 --- [           main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase -1073741824
+2017-10-26 18:01:22.761  INFO 5602 --- [           main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 0
+2017-10-26 18:01:22.786  INFO 5602 --- [           main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8080 (http)
+2017-10-26 18:01:22.790  INFO 5602 --- [           main] io.axoniq.axonbank.AxonBankApplication   : Started AxonBankApplication in 4.319 seconds (JVM running for 5.367)
+```
+X. Add endpoint
+To do something with our application we will need an endpoint. 
+
+
+X. Add service
+X. Add command
+X. Add aggregate
+X. Add event
+X. Add event handler
+X. Add view
+X. Add endpoint to retrieve data
+
+
+
+
+Other readings:
+- How to write an Aggregate test
+- How to write an application with multiple aggregatesf
+- How to write an application with a Saga
+- How to write an Upcaster
+- How to do a replay
+- ... and many more 
