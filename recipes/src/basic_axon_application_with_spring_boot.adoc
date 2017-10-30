@@ -2,11 +2,15 @@
 
 This recipe gives the basic steps for creating an Axon Framework based application with the use of Spring Boot. For the recipe creating an Axon Framework based application without the use of Spring Boot, go http://www.axoniq.io[here]
 
-This recipe will focus on the implementation of the application and not the concepts were the Axon Framework is based on. For the concepts of Axon go to the <Axon Framework reference guide>
+This recipe will focus on the implementation of the application and not the concepts were the Axon Framework is based on. For the concepts of the Axon Framework go to the http://www.axoniq.io[Axon Framework reference guide]
 
-Small background on the use case of the example application. Axon Framework has a good usecase in the world of banking. Keeping an audit log of transactions, bla bla bla
+All recipes are based on one domain, the bank. Axon Framework is in good use for a domain like a bank. A person wants to open a bank account to deposit and withdraw money from. Over time, the customer wants to see the current state of the bankaccount and see which transactions have taken place to get to the current amount. The events that have been applied over time are the basis of the transaction log and the current amount is representation of the state.
 
+Of course, over time the bank will find out that there can be more than one type of bank account that can be created or not all values required for withdraw are in the event. In that case, we will need to change the events and maybe adjust the events. We start simple in this example application, just a basic set of events. But at the bottom you can find a reference to other recipes for cooking upcasters, event stores, command busses and more. Let's first start with this recipe.
 
+For any question about the recipe, please ask via:
+- http://www.axoniq.io[Axon user group]
+- http://www.axoniq.io[AxonIQ support]
 
 
 === General
@@ -22,8 +26,9 @@ Small background on the use case of the example application. Axon Framework has 
 
 * *Axon Framework components*
 - Aggregate
-- EventHandlers
 - CommandHandlers
+- Eventsourcing handlers
+- EventHandlers
 
 === Method
 
