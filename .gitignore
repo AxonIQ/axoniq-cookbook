@@ -1,3 +1,7 @@
 *.iml
 .idea/
 
+src/main/java/io/axoniq/axonbank/read/
+src/main/java/io/axoniq/axonbank/write/
+src/main/resources/static/
+src/main/resources/templates/
