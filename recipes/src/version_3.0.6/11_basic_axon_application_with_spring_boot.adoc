@@ -14,42 +14,61 @@ Of course, over time the bank will find out that there can be more than one type
 
 === Ingredients
 * *Dependencies*
-- Spring Boot
-- Axon Framework v3.0.6
-- Spring Boot starter for Axon Framework
-- Kotlin
+
+[width="100%",frame="topbot",options="header"]
+|======================
+|*Dependency*                           |*Version*
+|Axon Framework                         |3.0.6
+|Spring Boot starter for Axon Framework |3.0.6
+|Spring Boot                            |1.5.8.RELEASE
+|Kotlin                                 |1.1.51
+|======================
 
 * *Axon Framework components*
-- Aggregate
-- CommandHandlers
-- Eventsourcing handlers
-- EventHandlers
+
+[width="100%",frame="topbot"]
+|======================
+|Aggregate
+|Command handlers
+|Event handlers
+|Event Sourcing handlers
+|======================
 
 === Method
 
-1. Set up the application at Spring 
-- start.spring.io
-- Fill in properties of the application (name, package, etc.)
-- Download the project from start.spring.io and open in your IDE
+* *Set up the Spring Boot application*
 
-2. Add dependencies for Axon Framework
-```
+For the creation of a simple Spring Boot application go to http://start.spring.io[start.spring.io].
+Configure the application metadata as preferred. Add `Web`, `JPA` and `HSQLDB` as dependencies. After configuring everything download the Spring Boot application and load as a project in the preferred IDE.
+
+* *Add dependencies*
+
+Navigate to the pom.xml. There will be already a set of Spring Boot related dependencies. Add the Axon Framework Spring Boot starter dependency to the list.
+[source, xml]
+----
 <dependency>
     <groupId>org.axonframework</groupId>
     <artifactId>axon-spring-boot-starter</artifactId>
     <version>3.0.6</version>
 </dependency>
-```
+----
 
-X. Run the application, if everything is done as explained. The Spring Boot application should just run
-```
-2017-10-26 18:01:22.755  INFO 5602 --- [           main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase -2147482648
-2017-10-26 18:01:22.759  INFO 5602 --- [           main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase -1073741824
-2017-10-26 18:01:22.761  INFO 5602 --- [           main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 0
-2017-10-26 18:01:22.786  INFO 5602 --- [           main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8080 (http)
-2017-10-26 18:01:22.790  INFO 5602 --- [           main] io.axoniq.axonbank.AxonBankApplication   : Started AxonBankApplication in 4.319 seconds (JVM running for 5.367)
-```
-X. Add endpoint
+For the value objects we will make use of https://kotlinlang.org/[Kotlin]. To use Kotlin, add the following dependency also to the list of dependencies.
+[source, xml]
+----
+<dependency>
+    <groupId>org.jetbrains.kotlin</groupId>
+    <artifactId>kotlin-stdlib</artifactId>
+    <version>1.1.51</version>
+</dependency>
+----
+
+* *Start the application*
+
+Run the application, if everything is done as explained. The Spring Boot application should run with no problem. If not, check configuration and Spring documentation before going to the next step.
+
+* *Create an endpoint*
+
 To do something with our application we will need an endpoint. 
 
 
