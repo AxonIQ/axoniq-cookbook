@@ -37,12 +37,12 @@ Of course, over time the bank will find out that there can be more than one type
 === Method
 
 
-====== *Set up the Spring Boot application*
+*1 Set up the Spring Boot application*
 
 For the creation of a simple Spring Boot application go to http://start.spring.io[start.spring.io].
 Configure the application metadata as preferred. Add `Web`, `JPA` and `HSQLDB` as dependencies. After configuring everything download the Spring Boot application and load as a project in the preferred IDE.
 
-* *Add dependencies*
+*2 Add dependencies*
 
 Navigate to the pom.xml. There will be already a set of Spring Boot related dependencies. Add the Axon Framework Spring Boot starter dependency to the list.
 [source, xml]
@@ -64,17 +64,226 @@ For the value objects we will make use of https://kotlinlang.org/[Kotlin]. To us
 </dependency>
 ----
 
-* *Start the application*
+*3 Start the application*
 
 Run the application, if everything is done as explained. The Spring Boot application should run with no problem. If not, check configuration and Spring documentation before going to the next steps.
 
-* *Create an endpoint*
+*4 Create the endpoints*
 
-To do something with our application we will need an endpoint. 
+To do something with our application we will need a couple of endpoints, one to create a bank account and two endpoints for depositing and withdrawing money.
 
+[source, java]
+----
+@RestController
+public class AccountController {
 
-X. Add service
-X. Add command
+    private static final Logger log = LoggerFactory.getLogger(AccountController.class);
+
+    private final AccountService accountService;
+
+    @Autowired
+    public AccountController(AccountService accountService) {
+        this.accountService = accountService;
+    }
+
+    @PostMapping("/account")
+    public ResponseEntity createBankAccount(@RequestBody String name) {
+        log.info("Request to create account for: {}", name);
+
+        UUID accountId = accountService.createBankAccount(name);
+
+        return new ResponseEntity<>(accountId, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/account/{accountId}/deposit/{amount}")
+    public ResponseEntity depositMoney(@PathVariable UUID accountId, @PathVariable Double amount) {
+        log.info("Request to withdraw {} dollar from account {} ", amount, accountId);
+
+        accountService.depositMoney(accountId, amount);
+
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PutMapping("/account/{accountId}/withdraw/{amount}")
+    public ResponseEntity withdrawMoney(@PathVariable UUID accountId, @PathVariable Double amount) {
+        log.info("Request to withdraw {} dollar from account {} ", amount, accountId);
+
+        accountService.withdrawMoney(accountId, amount);
+
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+}
+----
+
+*5 Create the commands*
+We need three commands to do our basic logic of creating an account, depositing and withdrawing money. For now, we only pass in the id we generate for the account and the name of the accountholder. The `@TargetAggregateIdentifier` annotation is required for command handling in the aggregate. Using this annotation, Axon knows which aggregate to target when handling the command.
+
+[source, java]
+----
+data class CreateAccountCommand(
+        @TargetAggregateIdentifier val accountId: UUID,
+        val name: String?
+)
+
+data class DepositMoneyCommand(
+        @TargetAggregateIdentifier val accountId: UUID,
+        val amount: Double
+)
+
+data class WithdrawMoneyCommand(
+        @TargetAggregateIdentifier val accountId: UUID,
+        val amount: Double
+)
+
+----
+
+*6 Create the service*
+
+The `AccountController` is actually a simple controller which is just receiving data via the endpoints and passing it through to the service. The `AccountService` will do the logic of validating the input and sending the commands. Validation should only be on level of input parameters being valid. Logic on whether money can be withdrawn from the account will be done in the `Aggregate`.
+
+[source, java]
+----
+@Service
+public class AccountService {
+
+    private final CommandGateway commandGateway;
+
+    @Autowired
+    public AccountService(CommandGateway commandGateway) {
+        this.commandGateway = commandGateway;
+    }
+
+    public UUID createBankAccount(String name) {
+        assertNotNull(name, "The name of the account holder should not be null");
+
+        UUID accountId = UUID.randomUUID();
+
+        CreateAccountCommand createAccountCommand = new CreateAccountCommand(accountId, name);
+        commandGateway.send(createAccountCommand);
+
+        return accountId;
+    }
+
+    public void depositMoney(UUID accountId, Double amount) {
+        commandGateway.send(new DepositMoneyCommand(accountId, amount));
+    }
+
+    public void withdrawMoney(UUID accountId, Double amount) {
+        commandGateway.send(new WithdrawMoneyCommand(accountId, amount));
+    }
+
+}
+----
+
+*7 Create the events*
+
+The events will be applied in the `Account` aggregate. For the domain of the bank, the events will be almost a one to one mapping of the commands. Although, in some cases the aggregate will handle a command and apply multiple events or the event might contain calculated data. In the case of the bank application the balance could be included in the event.
+
+[source, java]
+----
+data class AccountCreatedEvent(
+        val accountId: UUID,
+        val name: String?
+)
+
+data class MoneyDepositedEvent(
+        val accountId: UUID,
+        val amount: Double
+)
+
+data class MoneyWithdrawnEvent(
+        val accountId: UUID,
+        val amount: Double
+)
+----
+
+*8 Create the Aggregate*
+
+The `Aggregate` holds the state of the bank account. Commands are handled and when a change should be made to the state events will be applied. Important to mention is that the events will change the state of the aggregate. The command will only use the state of the aggregate to determine whether an event can be applied.
+
+The aggregate will start by first handling the command that does the creation of an object. In the case of the bank account the `CreateAccountCommand`. This `command` should be handled in the constructor of the class.
+
+[source, java]
+----
+// Required for Axon to create the aggregate [requires more explanation]
+public Account() {}
+
+@CommandHandler
+public Account(CreateAccountCommand command) {
+    apply(new AccountCreatedEvent(command.getAccountId(), command.getName()));
+}
+----
+
+The `CreateAccountCommand` does not require any validation for now. The `AccountCreatedEvent` event can be applied directly. To initialize the state of the `Account` aggregate with the id and a default balance, an `EventSourcingHandler` is used.
+
+[source, java]
+----
+@AggregateIdentifier
+private UUID accountId;
+
+private Double balance;
+
+@EventSourcingHandler
+protected void on(AccountCreatedEvent event) {
+    this.accountId = event.getAccountId();
+    this.balance = 0.0;
+}
+----
+
+The other commands will be handled in methods in the aggregate. The full aggregate with handling all commands and events will look like shown in the following snippet.
+
+[source, java]
+----
+@Aggregate
+public static class Account {
+
+    @AggregateIdentifier
+    private UUID accountId;
+
+    private Double balance;
+
+    // Required for Axon to create the aggregate
+    public Account() {
+    }
+
+    @CommandHandler
+    public Account(CreateAccountCommand command) {
+        apply(new AccountCreatedEvent(command.getAccountId(), command.getName()));
+    }
+
+    @CommandHandler
+    public void handle(DepositMoneyCommand command) {
+        apply(new MoneyDepositedEvent(command.getAccountId(), command.getAmount()));
+    }
+
+    @CommandHandler
+    public void handle(WithdrawMoneyCommand command) {
+        if (balance - command.getAmount() >= 0) {
+            apply(new MoneyDepositedEvent(command.getAccountId(), command.getAmount()));
+        }
+    }
+
+    @EventSourcingHandler
+    protected void on(AccountCreatedEvent event) {
+        this.accountId = event.getAccountId();
+        this.balance = 0.0;
+    }
+
+    @EventSourcingHandler
+    protected void on(MoneyDepositedEvent event) {
+        this.balance = balance + event.getAmount();
+    }
+
+    @EventSourcingHandler
+    protected void on(MoneyWithdrawnEvent event) {
+        this.balance = balance - event.getAmount();
+    }
+
+}
+
+----
+
 X. Add aggregate
 X. Add event
 X. Add event handler

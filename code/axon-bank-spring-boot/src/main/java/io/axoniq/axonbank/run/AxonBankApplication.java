@@ -1,6 +1,7 @@
 package io.axoniq.axonbank.run;
 
 import static org.axonframework.commandhandling.model.AggregateLifecycle.apply;
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 
 import java.util.UUID;
 
@@ -84,6 +85,8 @@ public class AxonBankApplication {
         }
 
         public UUID createBankAccount(String name) {
+            assertNotNull(name, "The name of the account holder should not be null");
+
             UUID accountId = UUID.randomUUID();
 
             CreateAccountCommand createAccountCommand = new CreateAccountCommand(accountId, name);
