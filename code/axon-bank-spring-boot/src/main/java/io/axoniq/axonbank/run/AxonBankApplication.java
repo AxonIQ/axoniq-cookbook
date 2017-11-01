@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.commandhandling.model.AggregateIdentifier;
+import org.axonframework.config.ProcessingGroup;
+import org.axonframework.eventhandling.EventHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.slf4j.Logger;
@@ -14,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,7 +36,7 @@ public class AxonBankApplication {
     @RestController
     public static class AccountController {
 
-        private final Logger log = LoggerFactory.getLogger(AccountController.class);
+        private static final Logger log = LoggerFactory.getLogger(AccountController.class);
 
         private final AccountService accountService;
 
@@ -147,5 +150,60 @@ public class AxonBankApplication {
         }
 
     }
+
+    @Service
+    @ProcessingGroup("Account")
+    public static class AccountProjector {
+
+        private final AccountRepository repository;
+
+        public AccountProjector(AccountRepository repository) {
+            this.repository = repository;
+        }
+
+        @EventHandler
+        public void on(AccountCreatedEvent event) {
+            AccountView accountView =
+                    AccountView.builder()
+                               .accountId(event.getAccountId())
+                               .name(event.getName())
+                               .build();
+
+            repository.save(accountView);
+        }
+
+        @EventHandler
+        public void on(MoneyDepositedEvent event) {
+            String accountId = event.getAccountId().toString();
+            AccountView accountView = repository.getOne(accountId);
+
+            double newBalance = accountView.getBalance() + event.getAmount();
+
+            AccountView updatedView = AccountView.builder()
+                                                 .copyOf(accountView)
+                                                 .balance(newBalance)
+                                                 .build();
+
+            repository.save(updatedView);
+        }
+
+        @EventHandler
+        public void on(MoneyWithdrawnEvent event) {
+            String accountId = event.getAccountId().toString();
+            AccountView accountView = repository.getOne(accountId);
+
+            double newBalance = accountView.getBalance() - event.getAmount();
+
+            AccountView updatedView = AccountView.builder()
+                                                 .copyOf(accountView)
+                                                 .balance(newBalance)
+                                                 .build();
+
+            repository.save(updatedView);
+        }
+
+    }
+
+
 
 }

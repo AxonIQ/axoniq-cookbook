@@ -36,7 +36,8 @@ Of course, over time the bank will find out that there can be more than one type
 
 === Method
 
-* *Set up the Spring Boot application*
+
+====== *Set up the Spring Boot application*
 
 For the creation of a simple Spring Boot application go to http://start.spring.io[start.spring.io].
 Configure the application metadata as preferred. Add `Web`, `JPA` and `HSQLDB` as dependencies. After configuring everything download the Spring Boot application and load as a project in the preferred IDE.
