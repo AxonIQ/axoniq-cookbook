@@ -68,7 +68,7 @@ For the value objects we will make use of https://kotlinlang.org/[Kotlin]. To us
 
 Run the application, if everything is done as explained. The Spring Boot application should run with no problem. If not, check configuration and Spring documentation before going to the next steps.
 
-*4 Create the endpoints*
+*4 Command-side implementation*
 
 To do something with our application we will need a couple of endpoints, one to create a bank account and two endpoints for depositing and withdrawing money.
 
@@ -116,7 +116,6 @@ public class AccountController {
 }
 ----
 
-*5 Create the commands*
 We need three commands to do our basic logic of creating an account, depositing and withdrawing money. For now, we only pass in the id we generate for the account and the name of the accountholder. The `@TargetAggregateIdentifier` annotation is required for command handling in the aggregate. Using this annotation, Axon knows which aggregate to target when handling the command.
 
 [source, java]
@@ -137,8 +136,6 @@ data class WithdrawMoneyCommand(
 )
 
 ----
-
-*6 Create the service*
 
 The `AccountController` is actually a simple controller which is just receiving data via the endpoints and passing it through to the service. The `AccountService` will do the logic of validating the input and sending the commands. Validation should only be on level of input parameters being valid. Logic on whether money can be withdrawn from the account will be done in the `Aggregate`.
 
@@ -176,8 +173,6 @@ public class AccountService {
 }
 ----
 
-*7 Create the events*
-
 The events will be applied in the `Account` aggregate. For the domain of the bank, the events will be almost a one to one mapping of the commands. Although, in some cases the aggregate will handle a command and apply multiple events or the event might contain calculated data. In the case of the bank application the balance could be included in the event.
 
 [source, java]
@@ -197,8 +192,6 @@ data class MoneyWithdrawnEvent(
         val amount: Double
 )
 ----
-
-*8 Create the Aggregate*
 
 The `Aggregate` holds the state of the bank account. Commands are handled and when a change should be made to the state events will be applied. Important to mention is that the events will change the state of the aggregate. The command will only use the state of the aggregate to determine whether an event can be applied.
 
@@ -236,7 +229,7 @@ The other commands will be handled in methods in the aggregate. The full aggrega
 [source, java]
 ----
 @Aggregate
-public static class Account {
+public class Account {
 
     @AggregateIdentifier
     private UUID accountId;
@@ -284,12 +277,164 @@ public static class Account {
 
 ----
 
-X. Add aggregate
-X. Add event
-X. Add event handler
-X. Add view
-X. Add endpoint to retrieve data
+*5 Query-side implementation*
 
+The `Account` aggregate keeps state of the account based on the events. So, using the event store it is possible to see the steps taken to get to the current balance. But replaying all the events every time we want to show the balance is a bit too much effort. Therefore, we have the query side to listen to the events and create a temporary projection of the state. Each time an event will come in, the projection will be updated. Every view that needs the data can then just query the system and will receive the projection of the state.
+
+The first step to accomplish this is creating the projector and using the `@EventHandler` annotation. In the example the projection is written to a database table, but many other options are possible, like publishing the latest projection to a RabbitMQ queue.
+
+When the `AccountCreatedEvent` is handled the view is created, the other events will update the view over time.
+
+[source, java]
+----
+@Service
+@ProcessingGroup("Account")
+public static class AccountProjector {
+
+    private final AccountRepository repository;
+
+    @Autowired
+    public AccountProjector(AccountRepository repository) {
+        this.repository = repository;
+    }
+
+    @EventHandler
+    public void on(AccountCreatedEvent event) {
+        AccountView accountView =
+                AccountView.builder()
+                           .accountId(event.getAccountId())
+                           .name(event.getName())
+                           .build();
+
+        repository.save(accountView);
+    }
+
+    @EventHandler
+    public void on(MoneyDepositedEvent event) {
+        UUID accountId = event.getAccountId();
+        AccountView accountView = repository.getOne(accountId);
+
+        double newBalance = accountView.getBalance() + event.getAmount();
+
+        AccountView updatedView = AccountView.builder()
+                                             .copyOf(accountView)
+                                             .balance(newBalance)
+                                             .build();
+
+        repository.save(updatedView);
+    }
+
+    @EventHandler
+    public void on(MoneyWithdrawnEvent event) {
+        UUID accountId = event.getAccountId();
+        AccountView accountView = repository.getOne(accountId);
+
+        double newBalance = accountView.getBalance() - event.getAmount();
+
+        AccountView updatedView = AccountView.builder()
+                                             .copyOf(accountView)
+                                             .balance(newBalance)
+                                             .build();
+
+        repository.save(updatedView);
+    }
+
+}
+----
+
+[source, java]
+----
+@Table(name = "account")
+@Entity(name = "account")
+data class AccountView(
+        @Id val accountId: UUID,
+        val name: String?,
+        val balance: Double
+) {
+
+    // Required for running embedded db [needs more explanation]
+    constructor() : this(UUID.randomUUID(), null, 0.0) {}
+
+    class Builder {
+        private lateinit var accountId: UUID
+        private var name: String? = null
+        private var balance: Double = 0.0
+
+        fun accountId(v: UUID) = apply { accountId = v }
+        fun name(v: String?) = apply { name = v }
+        fun balance(v: Double) = apply { balance = v }
+
+        fun copyOf(v: AccountView) = apply {
+            accountId = v.accountId
+            name = v.name
+            balance = v.balance
+        }
+
+        fun build() = AccountView(accountId, name, balance)
+    }
+
+    companion object {
+        @JvmStatic fun builder() = Builder()
+    }
+
+}
+----
+
+To query a specific account or to query for all two simple endpoints can be made. The controller requests the dataservice for information on one or more accounts. In this case the calls are simple and straightforward, but there could be cases where additional information should be added to the view (i.e. from other aggregates) or the projection should be filtered depending on the request parameters.
+
+[source, java]
+----
+ @RestController
+public static class AccountViewController {
+
+    private static final Logger log = LoggerFactory.getLogger(AccountViewController.class);
+
+    private final AccountDataService accountDataService;
+
+    @Autowired
+    public AccountViewController(AccountDataService accountDataService) {
+        this.accountDataService = accountDataService;
+    }
+
+    @GetMapping("/account/{accountId}")
+    public AccountView getAccountById(@PathVariable UUID accountId) {
+        log.info("Request Account with id: {}", accountId);
+
+        return accountDataService.getAccountById(accountId);
+    }
+
+    @GetMapping("/accounts")
+    public List<AccountView> getAllAccounts() {
+        log.info("Request all Accounts");
+
+        return accountDataService.getAllAccounts();
+    }
+
+}
+----
+
+[source, java]
+----
+@Service
+public static class AccountDataService {
+
+    private final AccountRepository accountRepository;
+
+    @Autowired
+    public AccountDataService(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+
+    public AccountView getAccountById(UUID accountId) {
+        return accountRepository.findOne(accountId);
+    }
+
+    public List<AccountView> getAllAccounts() {
+        return accountRepository.findAll();
+    }
+
+}
+----
 
 
 ====== For any question about the recipe, please contact

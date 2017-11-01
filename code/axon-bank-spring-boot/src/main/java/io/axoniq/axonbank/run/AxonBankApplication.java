@@ -3,6 +3,7 @@ package io.axoniq.axonbank.run;
 import static org.axonframework.commandhandling.model.AggregateLifecycle.apply;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.axonframework.commandhandling.CommandHandler;
@@ -20,6 +21,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -178,7 +180,7 @@ public class AxonBankApplication {
         @EventHandler
         public void on(MoneyDepositedEvent event) {
             UUID accountId = event.getAccountId();
-            AccountView accountView = repository.getOne(accountId);
+            AccountView accountView = repository.findOne(accountId);
 
             double newBalance = accountView.getBalance() + event.getAmount();
 
@@ -193,7 +195,7 @@ public class AxonBankApplication {
         @EventHandler
         public void on(MoneyWithdrawnEvent event) {
             UUID accountId = event.getAccountId();
-            AccountView accountView = repository.getOne(accountId);
+            AccountView accountView = repository.findOne(accountId);
 
             double newBalance = accountView.getBalance() - event.getAmount();
 
@@ -203,6 +205,54 @@ public class AxonBankApplication {
                                                  .build();
 
             repository.save(updatedView);
+        }
+
+    }
+
+    @RestController
+    public static class AccountViewController {
+
+        private static final Logger log = LoggerFactory.getLogger(AccountViewController.class);
+
+        private final AccountDataService accountDataService;
+
+        @Autowired
+        public AccountViewController(AccountDataService accountDataService) {
+            this.accountDataService = accountDataService;
+        }
+
+        @GetMapping("/account/{accountId}")
+        public AccountView getAccountById(@PathVariable UUID accountId) {
+            log.info("Request Account with id: {}", accountId);
+
+            return accountDataService.getAccountById(accountId);
+        }
+
+        @GetMapping("/accounts")
+        public List<AccountView> getAllAccounts() {
+            log.info("Request all Accounts");
+
+            return accountDataService.getAllAccounts();
+        }
+
+    }
+
+    @Service
+    public static class AccountDataService {
+
+        private final AccountRepository accountRepository;
+
+        @Autowired
+        public AccountDataService(AccountRepository accountRepository) {
+            this.accountRepository = accountRepository;
+        }
+
+        public AccountView getAccountById(UUID accountId) {
+            return accountRepository.findOne(accountId);
+        }
+
+        public List<AccountView> getAllAccounts() {
+            return accountRepository.findAll();
         }
 
     }
