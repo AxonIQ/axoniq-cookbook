@@ -42,22 +42,22 @@ data class MoneyWithdrawnEvent(
 @Table(name = "account")
 @Entity(name = "account")
 data class AccountView(
-        @Id val accountId: UUID,
+        @Id val accountId: UUID?,
         val name: String?,
-        val balance: Double
+        val balance: Double?
 ) {
-    constructor() : this(UUID.randomUUID(), null, 0.0) {
 
-    }
+    // Required for running embedded db
+    constructor() : this(UUID.randomUUID(), null, 0.0) {}
 
     class Builder {
-        private lateinit var accountId: UUID
+        private var accountId: UUID? = null
         private var name: String? = null
-        private var balance: Double = 0.0
+        private var balance: Double? = 0.0
 
-        fun accountId(v: UUID) = apply { accountId = v }
+        fun accountId(v: UUID?) = apply { accountId = v }
         fun name(v: String?) = apply { name = v }
-        fun balance(v: Double) = apply { balance = v }
+        fun balance(v: Double?) = apply { balance = v }
 
         fun copyOf(v: AccountView) = apply {
             accountId = v.accountId
