@@ -66,7 +66,7 @@ For the value objects we will make use of https://kotlinlang.org/[Kotlin]. To us
 
 * *Start the application*
 
-Run the application, if everything is done as explained. The Spring Boot application should run with no problem. If not, check configuration and Spring documentation before going to the next step.
+Run the application, if everything is done as explained. The Spring Boot application should run with no problem. If not, check configuration and Spring documentation before going to the next steps.
 
 * *Create an endpoint*
 

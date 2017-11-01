@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -157,6 +156,7 @@ public class AxonBankApplication {
 
         private final AccountRepository repository;
 
+        @Autowired
         public AccountProjector(AccountRepository repository) {
             this.repository = repository;
         }
@@ -174,7 +174,7 @@ public class AxonBankApplication {
 
         @EventHandler
         public void on(MoneyDepositedEvent event) {
-            String accountId = event.getAccountId().toString();
+            UUID accountId = event.getAccountId();
             AccountView accountView = repository.getOne(accountId);
 
             double newBalance = accountView.getBalance() + event.getAmount();
@@ -189,7 +189,7 @@ public class AxonBankApplication {
 
         @EventHandler
         public void on(MoneyWithdrawnEvent event) {
-            String accountId = event.getAccountId().toString();
+            UUID accountId = event.getAccountId();
             AccountView accountView = repository.getOne(accountId);
 
             double newBalance = accountView.getBalance() - event.getAmount();
@@ -203,7 +203,5 @@ public class AxonBankApplication {
         }
 
     }
-
-
 
 }

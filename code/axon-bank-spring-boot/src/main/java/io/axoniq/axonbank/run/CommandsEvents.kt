@@ -1,9 +1,9 @@
 package io.axoniq.axonbank.run
 
 import org.axonframework.commandhandling.TargetAggregateIdentifier
-import org.springframework.data.annotation.Id
 import java.util.*
 import javax.persistence.Entity
+import javax.persistence.Id
 import javax.persistence.Table
 
 // Commands
@@ -39,13 +39,17 @@ data class MoneyWithdrawnEvent(
 )
 
 // Value objects
-@Entity(name = "account")
 @Table(name = "account")
+@Entity(name = "account")
 data class AccountView(
         @Id val accountId: UUID,
         val name: String?,
         val balance: Double
 ) {
+    constructor() : this(UUID.randomUUID(), null, 0.0) {
+
+    }
+
     class Builder {
         private lateinit var accountId: UUID
         private var name: String? = null
