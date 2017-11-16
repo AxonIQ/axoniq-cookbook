@@ -1,4 +1,4 @@
-package io.axoniq.axonbank;
+package io.axoniq.axonbank.run;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
