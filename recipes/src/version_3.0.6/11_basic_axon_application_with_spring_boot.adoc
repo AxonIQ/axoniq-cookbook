@@ -1,12 +1,16 @@
+:imagesdir: /images
+
 == Recipe - Axon Framework in a Spring Boot application
 
-This recipe gives the basic steps for creating an Axon Framework based application with the use of Spring Boot. For the recipe creating an Axon Framework based application without the use of Spring Boot, go http://www.axoniq.io[here]
+This recipe gives you the basic steps for creating an Axon Framework based application with the use of Spring Boot. The Axon Framework is not tied to Spring. You can find the recipe on how to create a basic Axon application without the use of Spring http://www.axoniq.io[here].
 
-This recipe will focus on the implementation of the application and not the concepts were the Axon Framework is based on. For the concepts of the Axon Framework go to the http://www.axoniq.io[Axon Framework reference guide]
+This recipe will focus on the implementation of an Axon application and not the concepts were the Axon Framework is based on. You can find the in dept information on the Axon Framework in the http://www.axoniq.io[Axon Framework reference guide]
 
-All recipes are based on one domain, the bank. Axon Framework is in good use for a domain like a bank. A person wants to open a bank account to deposit and withdraw money from. Over time, the customer wants to see the current state of the bankaccount and see which transactions have taken place to get to the current amount. The events that have been applied over time are the basis of the transaction log and the current amount is representation of the state.
+All the recipes are based on one domain, a bank. Axon Framework with CQRS and eventsourcing applies very well to the domain of a bank. . A person wants to open a bank account to deposit and withdraw money from. Over time, the customer wants to see the current state of the account and see which transactions have taken place to get to the current amount. The events that have been applied over time are the basis of the transaction log and the current amount is representation of the state. Next to depositing and withdrawing money, the bank wants to know all changes that have taken place to an account for auditing purposes. The last version of its details is shown to the accountholder, but the bank might want to see the change log, i.e. for auditing purposes, instead of only the last state.
 
-Of course, over time the bank will find out that there can be more than one type of bank account that can be created or not all values required for withdraw are in the event. In that case, we will need to change the events and maybe adjust the events. We start simple in this example application, just a basic set of events. But at the bottom you can find a reference to other recipes for cooking upcasters, event stores, command busses and more. Let's first start with this recipe.
+This recipe will lead you through the first step of creating a bank account and depositing and withdrawing money. The following diagram gives an overview of the classes we will create in the application. The command-side represents the classes related to creating and writing the events. The query-side represents the handling of the events and requests for the projection of the data.
+
+image::overview.png[overview,align="center"]
 
 === General
 - Cooks in: 30 minutes
@@ -39,8 +43,10 @@ Of course, over time the bank will find out that there can be more than one type
 
 *1 Set up the Spring Boot application*
 
-For the creation of a simple Spring Boot application go to http://start.spring.io[start.spring.io].
-Configure the application metadata as preferred. Add `Web`, `JPA` and `HSQLDB` as dependencies. After configuring everything download the Spring Boot application and load as a project in the preferred IDE.
+For the creation of a simple Spring Boot application you can go to http://start.spring.io[start.spring.io].
+You can configure the application metadata as preferred. In this example we added `Web`, `JPA` and `HSQLDB` as dependencies. After configuring everything you can download the Spring Boot application and load as a project in your preferred IDE.
+
+image::springio.png[springio,align="center"]
 
 *2 Add dependencies*
 
@@ -54,7 +60,7 @@ Navigate to the pom.xml. There will be already a set of Spring Boot related depe
 </dependency>
 ----
 
-For the value objects we will make use of https://kotlinlang.org/[Kotlin]. To use Kotlin, add the following dependency also to the list of dependencies.
+For the value objects we will make use of https://kotlinlang.org/[Kotlin]. To use Kotlin, add the following also to the list of dependencies.
 [source, xml]
 ----
 <dependency>
@@ -64,13 +70,78 @@ For the value objects we will make use of https://kotlinlang.org/[Kotlin]. To us
 </dependency>
 ----
 
+For building the application you will need to two following three plugins to the pom.xml
+[source, xml]
+----
+<build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jvmTarget>1.8</jvmTarget>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>java-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>java-test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+----
+
 *3 Start the application*
 
-Run the application, if everything is done as explained. The Spring Boot application should run with no problem. If not, check configuration and Spring documentation before going to the next steps.
+You should be able to run the Axon Spring Boot application now without any issues. If not, please check your configuration and Spring documentation before going to the next steps.
 
 *4 Command-side implementation*
 
-To do something with our application we will need a couple of endpoints, one to create a bank account and two endpoints for depositing and withdrawing money.
+To do something with our application we will need a couple of endpoints, one endpoint to create a bank account and two endpoints for depositing and withdrawing money.
 
 [source, java]
 ----
@@ -253,7 +324,7 @@ public class Account {
     @CommandHandler
     public void handle(WithdrawMoneyCommand command) {
         if (balance - command.getAmount() >= 0) {
-            apply(new MoneyDepositedEvent(command.getAccountId(), command.getAmount()));
+            apply(new MoneyWithdrawnEvent(command.getAccountId(), command.getAmount()));
         }
     }
 
@@ -442,6 +513,8 @@ public static class AccountDataService {
 - http://www.axoniq.io[AxonIQ support]
 
 ====== Other readings and recipes
+Of course, over time the bank will find out that there can be more than one type of bank account that can be created or not all values required for withdraw are in the event. In that case, we will need to change the events and maybe adjust the events. We start simple in this example application, just a basic set of events. But at the bottom you can find a reference to other recipes for cooking upcasters, event stores, command busses and more. Let's first start with this recipe.
+
 - How to write an Aggregate test
 - How to write an Upcaster
 - How to add a Saga

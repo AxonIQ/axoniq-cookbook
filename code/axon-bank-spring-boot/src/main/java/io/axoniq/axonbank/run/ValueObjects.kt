@@ -48,7 +48,7 @@ data class AccountView(
 ) {
 
     // Required for running embedded db
-    constructor() : this(UUID.randomUUID(), null, 0.0) {}
+    constructor() : this(UUID.randomUUID(), null, 0.0)
 
     class Builder {
         private lateinit var accountId: UUID
