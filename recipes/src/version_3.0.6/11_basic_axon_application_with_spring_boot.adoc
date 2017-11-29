@@ -1,12 +1,15 @@
 :imagesdir: /images
 
+// TODO
+// - Add exception to withdraw command handling
+
 == Recipe - Axon Framework in a Spring Boot application
 
 This recipe gives you the basic steps for creating an Axon Framework based application with the use of Spring Boot. The Axon Framework is not tied to Spring. You can find the recipe on how to create a basic Axon application without the use of Spring http://www.axoniq.io[here].
 
 This recipe will focus on the implementation of an Axon application and not the concepts were the Axon Framework is based on. You can find the in dept information on the Axon Framework in the http://www.axoniq.io[Axon Framework reference guide]
 
-All the recipes are based on one domain, a bank. Axon Framework with CQRS and eventsourcing applies very well to the domain of a bank. . A person wants to open a bank account to deposit and withdraw money from. Over time, the customer wants to see the current state of the account and see which transactions have taken place to get to the current amount. The events that have been applied over time are the basis of the transaction log and the current amount is representation of the state. Next to depositing and withdrawing money, the bank wants to know all changes that have taken place to an account for auditing purposes. The last version of its details is shown to the accountholder, but the bank might want to see the change log, i.e. for auditing purposes, instead of only the last state.
+All the recipes are based on one domain, a bank. Axon Framework with CQRS and eventsourcing applies very well to the domain of a bank. A person wants to open a bank account to deposit and withdraw money from. Over time, the customer wants to see the current state of the account and see which transactions have taken place to get to the current amount. The events that have been applied over time are the basis of the transaction log and the current amount is representation of the state. Next to depositing and withdrawing money, the bank wants to know all changes that have taken place to an account for auditing purposes. The last version of its details is shown to the accountholder, but the bank might want to see the change log, i.e. for auditing purposes, instead of only the last state.
 
 This recipe will lead you through the first step of creating a bank account and depositing and withdrawing money. The following diagram gives an overview of the classes we will create in the application. The command-side represents the classes related to creating and writing the events. The query-side represents the handling of the events and requests for the projection of the data.
 
@@ -22,10 +25,10 @@ image::overview.png[overview,align="center"]
 [width="100%",frame="topbot",options="header"]
 |======================
 |*Dependency*                           |*Version*
-|Axon Framework                         |3.0.6
-|Spring Boot starter for Axon Framework |3.0.6
-|Spring Boot                            |1.5.8.RELEASE
-|Kotlin                                 |1.1.51
+|Axon Framework                         |3.0.X
+|Spring Boot starter for Axon Framework |3.0.X
+|Spring Boot                            |1.5.X.RELEASE
+|Kotlin                                 |1.1.X
 |======================
 
 * *Axon Framework components*
@@ -141,7 +144,7 @@ You should be able to run the Axon Spring Boot application now without any issue
 
 *4 Command-side implementation*
 
-To do something with our application we will need a couple of endpoints, one endpoint to create a bank account and two endpoints for depositing and withdrawing money.
+We will need a couple of endpoints, one endpoint to create a bank account and two endpoints for depositing and withdrawing money.
 
 [source, java]
 ----
@@ -187,7 +190,7 @@ public class AccountController {
 }
 ----
 
-We need three commands to do our basic logic of creating an account, depositing and withdrawing money. For now, we only pass in the id we generate for the account and the name of the accountholder. The `@TargetAggregateIdentifier` annotation is required for command handling in the aggregate. Using this annotation, Axon knows which aggregate to target when handling the command.
+We need three commands for our logic of creating an account, depositing and withdrawing money. We will create the `CreateAccountCommand`. `DepositMoneyCommand` and `WithdrawMoneyCommand`. Next to the id of the account the name of the accountholder is saved. The `@TargetAggregateIdentifier` annotation is required for command handling in the aggregate. By using this annotation, Axon knows which aggregate to target when handling the command.
 
 [source, java]
 ----
@@ -208,7 +211,7 @@ data class WithdrawMoneyCommand(
 
 ----
 
-The `AccountController` is actually a simple controller which is just receiving data via the endpoints and passing it through to the service. The `AccountService` will do the logic of validating the input and sending the commands. Validation should only be on level of input parameters being valid. Logic on whether money can be withdrawn from the account will be done in the `Aggregate`.
+The `AccountController` is actually a simple controller which is just receiving data via the endpoints and passing it through to the service. Our `AccountService` will do the logic of validating the input and sending the commands. Validation should only be on level of input parameters being valid. Logic on whether money can be withdrawn from the account will be done in the command-handling model, the `Account` aggregate.
 
 [source, java]
 ----
@@ -244,7 +247,7 @@ public class AccountService {
 }
 ----
 
-The events will be applied in the `Account` aggregate. For the domain of the bank, the events will be almost a one to one mapping of the commands. Although, in some cases the aggregate will handle a command and apply multiple events or the event might contain calculated data. In the case of the bank application the balance could be included in the event.
+The events will be applied in the `Account` aggregate. For the domain of the bank, the events will be almost a one to one mapping of the commands. Although, in some cases the aggregate will handle a command and apply multiple events or the event might contain calculated data. For example, in the case of the bank application the balance could be included in the event.
 
 [source, java]
 ----
@@ -264,7 +267,7 @@ data class MoneyWithdrawnEvent(
 )
 ----
 
-The `Aggregate` holds the state of the bank account. Commands are handled and when a change should be made to the state events will be applied. Important to mention is that the events will change the state of the aggregate. The command will only use the state of the aggregate to determine whether an event can be applied.
+The `Account` aggregate holds the state of the bank account. Commands are handled and when a change should be made to the state events will be applied. Important to mention is that the events will change the state of the aggregate. The command will only use the state of the aggregate to determine whether an event can be applied.
 
 The aggregate will start by first handling the command that does the creation of an object. In the case of the bank account the `CreateAccountCommand`. This `command` should be handled in the constructor of the class.
 
@@ -279,7 +282,7 @@ public Account(CreateAccountCommand command) {
 }
 ----
 
-The `CreateAccountCommand` does not require any validation for now. The `AccountCreatedEvent` event can be applied directly. To initialize the state of the `Account` aggregate with the id and a default balance, an `EventSourcingHandler` is used.
+The `CreateAccountCommand` does not require any validation for now. The `AccountCreatedEvent` event can be applied directly. To initialize the state of the `Account` aggregate with the id and a default balance, an `EventSourcingHandler` is used. The events are handled the next time the aggregate is retrieved for handling a new command. The state of the aggregate needs to be build up based on the past events.
 
 [source, java]
 ----
@@ -326,6 +329,8 @@ public class Account {
         if (balance - command.getAmount() >= 0) {
             apply(new MoneyWithdrawnEvent(command.getAccountId(), command.getAmount()));
         }
+
+        // todo add exception handling
     }
 
     @EventSourcingHandler
@@ -350,16 +355,15 @@ public class Account {
 
 *5 Query-side implementation*
 
-The `Account` aggregate keeps state of the account based on the events. So, using the event store it is possible to see the steps taken to get to the current balance. But replaying all the events every time we want to show the balance is a bit too much effort. Therefore, we have the query side to listen to the events and create a temporary projection of the state. Each time an event will come in, the projection will be updated. Every view that needs the data can then just query the system and will receive the projection of the state.
+The `Account` aggregate keeps state of the account based on the events. So, by using the event store it is possible to see the steps taken to get to the current balance. Although, replaying all the events every time we want to show the balance is a bit too much effort. Therefore, we have the query side to listen to the events and create a temporary projection of the state. Each time an event will come in, the projection will be updated. Every view that needs the data can then just query the system and will receive the current state.
 
-The first step to accomplish this is creating the projector and using the `@EventHandler` annotation. In the example the projection is written to a database table, but many other options are possible, like publishing the latest projection to a RabbitMQ queue.
+The first step to accomplish this is creating the projector and using the `@EventHandler` annotation. In the example the projection is written to a database table, but many other options are possible, like publishing the latest projection to a RabbitMQ queue or sending out an email.
 
 When the `AccountCreatedEvent` is handled the view is created, the other events will update the view over time.
 
 [source, java]
 ----
 @Service
-@ProcessingGroup("Account")
 public static class AccountProjector {
 
     private final AccountRepository repository;
@@ -413,6 +417,10 @@ public static class AccountProjector {
 }
 ----
 
+To keep the code concise in this recipe, we save all fields on database entity level. Preferred is an object in between that maps the state representation to a database object. For example `AccountView` and `AccountViewDao`.
+
+Due to running the embedded database in this code exmampe, we need to add a simple constructor to the database object: `constructor() : this(UUID.randomUUID(), null, 0.0) {}`. For now, we just add some dummy data in here.
+
 [source, java]
 ----
 @Table(name = "account")
@@ -449,9 +457,16 @@ data class AccountView(
     }
 
 }
+
 ----
 
-To query a specific account or to query for all two simple endpoints can be made. The controller requests the dataservice for information on one or more accounts. In this case the calls are simple and straightforward, but there could be cases where additional information should be added to the view (i.e. from other aggregates) or the projection should be filtered depending on the request parameters.
+Due to the use of JPA we only have to create an `AccountRepository` that extends from the `JpaRepository`. JPA will take care of creating methods as `save()`, `findOne()` and `findAll()`
+[source, java]
+----
+public interface AccountRepository extends JpaRepository<AccountView, UUID> {}
+----
+
+To query a specific account or query all the accounts, we create two endpoints. The controller requests the `AccountDataService` for information on one or more accounts. In this case the calls are simple and straightforward, but there could be cases where additional information should be added to the view (i.e. from other aggregates) or the projection should be filtered depending on the request parameters.
 
 [source, java]
 ----
@@ -507,16 +522,16 @@ public static class AccountDataService {
 }
 ----
 
-
-====== For any question about the recipe, please contact
-- http://www.axoniq.io[Axon user group]
-- http://www.axoniq.io[AxonIQ support]
-
 ====== Other readings and recipes
-Of course, over time the bank will find out that there can be more than one type of bank account that can be created or not all values required for withdraw are in the event. In that case, we will need to change the events and maybe adjust the events. We start simple in this example application, just a basic set of events. But at the bottom you can find a reference to other recipes for cooking upcasters, event stores, command busses and more. Let's first start with this recipe.
+By following this recipe, you should be able to run a simple application using Spring Boot and the Axon Framework. Of course, over time the bank will find out that there can be more than one type of bank account that can be created or not all values required for withdraw are in the event. In that case, we will need to change the events and maybe adjust the events. We start simple in this example application, just a basic set of events. But at the bottom you can find a reference to other recipes for cooking upcasters, event stores, command busses and more. Let's first start with this recipe.
 
 - How to write an Aggregate test
 - How to write an Upcaster
 - How to add a Saga
 - How to add an Entity under an Aggregate
 - Axon Framework reference guide
+
+====== For any question about the recipe, please contact
+- http://www.axoniq.io[Axon user group]
+- http://www.axoniq.io[AxonIQ support]
+- NEWSLETTER
