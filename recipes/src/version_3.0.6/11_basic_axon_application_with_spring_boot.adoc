@@ -470,7 +470,7 @@ To query a specific account or query all the accounts, we create two endpoints. 
 
 [source, java]
 ----
- @RestController
+@RestController
 public static class AccountViewController {
 
     private static final Logger log = LoggerFactory.getLogger(AccountViewController.class);
