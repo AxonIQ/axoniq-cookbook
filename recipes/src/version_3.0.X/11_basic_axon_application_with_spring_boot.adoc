@@ -1,12 +1,10 @@
+:imagesdir: /images
 :imagesdir: images
 
 // For Asciidoctor-pdf plugin
 :pdf-page-size: A4
 :source-highlighter: rouge
 :autofit-option:
-
-// TODO
-// - Add exception to withdraw command handling
 
 // Run asciidoctor-pdf with:
 // asciidoctor-pdf 11_basic_axon_application_with_spring_boot.adoc -a pdf-style=default-theme.yml
