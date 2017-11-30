@@ -535,13 +535,14 @@ public static class AccountDataService {
 ----
 
 ====== Other readings and recipes
-By following this recipe, you should be able to run a simple application using Spring Boot and the Axon Framework. Of course, over time the bank will find out that there can be more than one type of bank account that can be created or not all values required for withdraw are in the event. In that case, we will need to change the events and maybe adjust the events. We start simple in this example application, just a basic set of events. But at the bottom you can find a reference to other recipes for cooking upcasters, event stores, command busses and more. Let's first start with this recipe.
+By following this recipe, you should be able to run a simple application using Spring Boot and the Axon Framework. Of course, over time the bank will find out that there can be more than one type of bank account that can be created or not all values required for withdraw are in the event. In that case, we will need to change the events and maybe adjust the events. More recipes will follow on how to implement these kind of features and changes within an Axon Framework based application.
 
-- How to write an Aggregate test
-- How to write an Upcaster
-- How to add a Saga
-- How to add an Entity under an Aggregate
-- Axon Framework reference guide
+//
+//- How to write an Aggregate test
+//- How to write an Upcaster
+//- How to add a Saga
+//- How to add an Entity under an Aggregate
+//- Axon Framework reference guide
 
 ====== For any question about the recipe, please contact
 - http://www.axoniq.io[Axon user group]
