@@ -1,9 +1,21 @@
-:imagesdir: /images
+:imagesdir: images
+
+// For Asciidoctor-pdf plugin
+:pdf-page-size: A4
+:source-highlighter: rouge
+:autofit-option:
 
 // TODO
 // - Add exception to withdraw command handling
 
-== Recipe - Axon Framework in a Spring Boot application
+// Run asciidoctor-pdf with:
+// asciidoctor-pdf 11_basic_axon_application_with_spring_boot.adoc -a pdf-style=default-theme.yml
+
+
+image::axoniq.png[axonlogo,align="center"]
+= Recipe
+
+== Axon Framework in a Spring Boot application
 
 This recipe gives you the basic steps for creating an Axon Framework based application with the use of Spring Boot. The Axon Framework is not tied to Spring. You can find the recipe on how to create a basic Axon application without the use of Spring http://www.axoniq.io[here].
 
@@ -54,7 +66,7 @@ image::springio.png[springio,align="center"]
 *2 Add dependencies*
 
 Navigate to the pom.xml. There will be already a set of Spring Boot related dependencies. Add the Axon Framework Spring Boot starter dependency to the list.
-[source, xml]
+[source%autofit, xml]
 ----
 <dependency>
     <groupId>org.axonframework</groupId>
@@ -64,7 +76,7 @@ Navigate to the pom.xml. There will be already a set of Spring Boot related depe
 ----
 
 For the value objects we will make use of https://kotlinlang.org/[Kotlin]. To use Kotlin, add the following also to the list of dependencies.
-[source, xml]
+[source%autofit, xml]
 ----
 <dependency>
     <groupId>org.jetbrains.kotlin</groupId>
@@ -74,68 +86,68 @@ For the value objects we will make use of https://kotlinlang.org/[Kotlin]. To us
 ----
 
 For building the application you will need to two following three plugins to the pom.xml
-[source, xml]
+[source%autofit, xml]
 ----
 <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-maven-plugin</artifactId>
-                <version>${kotlin.version}</version>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>test-compile</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>test-compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <jvmTarget>1.8</jvmTarget>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>default-testCompile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>java-compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>java-test-compile</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+        <plugin>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-plugin</artifactId>
+            <version>${kotlin.version}</version>
+            <executions>
+                <execution>
+                    <id>compile</id>
+                    <phase>compile</phase>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>test-compile</id>
+                    <phase>test-compile</phase>
+                    <goals>
+                        <goal>test-compile</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <jvmTarget>1.8</jvmTarget>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>default-compile</id>
+                    <phase>none</phase>
+                </execution>
+                <execution>
+                    <id>default-testCompile</id>
+                    <phase>none</phase>
+                </execution>
+                <execution>
+                    <id>java-compile</id>
+                    <phase>compile</phase>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>java-test-compile</id>
+                    <phase>test-compile</phase>
+                    <goals>
+                        <goal>testCompile</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
 ----
 
 *3 Start the application*
@@ -146,7 +158,7 @@ You should be able to run the Axon Spring Boot application now without any issue
 
 We will need a couple of endpoints, one endpoint to create a bank account and two endpoints for depositing and withdrawing money.
 
-[source, java]
+[source%autofit, java]
 ----
 @RestController
 public class AccountController {
@@ -192,7 +204,7 @@ public class AccountController {
 
 We need three commands for our logic of creating an account, depositing and withdrawing money. We will create the `CreateAccountCommand`. `DepositMoneyCommand` and `WithdrawMoneyCommand`. Next to the id of the account the name of the accountholder is saved. The `@TargetAggregateIdentifier` annotation is required for command handling in the aggregate. By using this annotation, Axon knows which aggregate to target when handling the command.
 
-[source, java]
+[source%autofit, java]
 ----
 data class CreateAccountCommand(
         @TargetAggregateIdentifier val accountId: UUID,
@@ -213,7 +225,7 @@ data class WithdrawMoneyCommand(
 
 The `AccountController` is actually a simple controller which is just receiving data via the endpoints and passing it through to the service. Our `AccountService` will do the logic of validating the input and sending the commands. Validation should only be on level of input parameters being valid. Logic on whether money can be withdrawn from the account will be done in the command-handling model, the `Account` aggregate.
 
-[source, java]
+[source%autofit, java]
 ----
 @Service
 public class AccountService {
@@ -249,7 +261,7 @@ public class AccountService {
 
 The events will be applied in the `Account` aggregate. For the domain of the bank, the events will be almost a one to one mapping of the commands. Although, in some cases the aggregate will handle a command and apply multiple events or the event might contain calculated data. For example, in the case of the bank application the balance could be included in the event.
 
-[source, java]
+[source%autofit, java]
 ----
 data class AccountCreatedEvent(
         val accountId: UUID,
@@ -271,7 +283,7 @@ The `Account` aggregate holds the state of the bank account. Commands are handle
 
 The aggregate will start by first handling the command that does the creation of an object. In the case of the bank account the `CreateAccountCommand`. This `command` should be handled in the constructor of the class.
 
-[source, java]
+[source%autofit, java]
 ----
 // Required for Axon to create the aggregate [requires more explanation]
 public Account() {}
@@ -284,7 +296,7 @@ public Account(CreateAccountCommand command) {
 
 The `CreateAccountCommand` does not require any validation for now. The `AccountCreatedEvent` event can be applied directly. To initialize the state of the `Account` aggregate with the id and a default balance, an `EventSourcingHandler` is used. The events are handled the next time the aggregate is retrieved for handling a new command. The state of the aggregate needs to be build up based on the past events.
 
-[source, java]
+[source%autofit, java]
 ----
 @AggregateIdentifier
 private UUID accountId;
@@ -300,7 +312,7 @@ protected void on(AccountCreatedEvent event) {
 
 The other commands will be handled in methods in the aggregate. The full aggregate with handling all commands and events will look like shown in the following snippet.
 
-[source, java]
+[source%autofit, java]
 ----
 @Aggregate
 public class Account {
@@ -361,7 +373,7 @@ The first step to accomplish this is creating the projector and using the `@Even
 
 When the `AccountCreatedEvent` is handled the view is created, the other events will update the view over time.
 
-[source, java]
+[source%autofit, java]
 ----
 @Service
 public static class AccountProjector {
@@ -421,7 +433,7 @@ To keep the code concise in this recipe, we save all fields on database entity l
 
 Due to running the embedded database in this code exmampe, we need to add a simple constructor to the database object: `constructor() : this(UUID.randomUUID(), null, 0.0) {}`. For now, we just add some dummy data in here.
 
-[source, java]
+[source%autofit, java]
 ----
 @Table(name = "account")
 @Entity(name = "account")
@@ -461,14 +473,14 @@ data class AccountView(
 ----
 
 Due to the use of JPA we only have to create an `AccountRepository` that extends from the `JpaRepository`. JPA will take care of creating methods as `save()`, `findOne()` and `findAll()`
-[source, java]
+[source%autofit, java]
 ----
 public interface AccountRepository extends JpaRepository<AccountView, UUID> {}
 ----
 
 To query a specific account or query all the accounts, we create two endpoints. The controller requests the `AccountDataService` for information on one or more accounts. In this case the calls are simple and straightforward, but there could be cases where additional information should be added to the view (i.e. from other aggregates) or the projection should be filtered depending on the request parameters.
 
-[source, java]
+[source%autofit, java]
 ----
 @RestController
 public static class AccountViewController {
@@ -499,7 +511,7 @@ public static class AccountViewController {
 }
 ----
 
-[source, java]
+[source%autofit, java]
 ----
 @Service
 public static class AccountDataService {
@@ -534,4 +546,3 @@ By following this recipe, you should be able to run a simple application using S
 ====== For any question about the recipe, please contact
 - http://www.axoniq.io[Axon user group]
 - http://www.axoniq.io[AxonIQ support]
-- NEWSLETTER

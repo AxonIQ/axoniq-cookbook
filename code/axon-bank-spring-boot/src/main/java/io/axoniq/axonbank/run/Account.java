@@ -17,7 +17,7 @@ public class Account {
 
     private Double balance;
 
-    // Required for Axon to create the aggregate
+    // Required for Axon to re-create the aggregate
     public Account() {
     }
 
