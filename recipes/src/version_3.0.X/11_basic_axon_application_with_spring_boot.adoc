@@ -9,15 +9,16 @@
 // Run asciidoctor-pdf with:
 // asciidoctor-pdf 11_basic_axon_application_with_spring_boot.adoc -a pdf-style=default-theme.yml
 
+image::axoniq.png[axonlogo,120]
 
-image::axoniq.png[axonlogo,align="center"]
 = Recipe
 
-== Axon Framework in a Spring Boot application
+== Simple application using Axon Framework and Spring Boot
 
-This recipe gives you the basic steps for creating an Axon Framework based application with the use of Spring Boot. The Axon Framework is not tied to Spring. You can find the recipe on how to create a basic Axon application without the use of Spring http://www.axoniq.io[here].
+This recipe gives you the basic steps for creating an Axon Framework based application with the use of Spring Boot.
+//The Axon Framework is not tied to Spring. You can find the recipe on how to create a basic Axon application without the use of Spring http://www.axoniq.io[here].
 
-This recipe will focus on the implementation of an Axon application and not the concepts were the Axon Framework is based on. You can find the in dept information on the Axon Framework in the http://www.axoniq.io[Axon Framework reference guide]
+This recipe will focus on the implementation of an Axon application and not the concepts were the Axon Framework is based on. You can find the in dept information on the Axon Framework in the https://docs.axonframework.org/[Axon Framework reference guide]
 
 All the recipes are based on one domain, a bank. Axon Framework with CQRS and eventsourcing applies very well to the domain of a bank. A person wants to open a bank account to deposit and withdraw money from. Over time, the customer wants to see the current state of the account and see which transactions have taken place to get to the current amount. The events that have been applied over time are the basis of the transaction log and the current amount is representation of the state. Next to depositing and withdrawing money, the bank wants to know all changes that have taken place to an account for auditing purposes. The last version of its details is shown to the accountholder, but the bank might want to see the change log, i.e. for auditing purposes, instead of only the last state.
 
