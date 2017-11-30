@@ -13,25 +13,25 @@ image::axoniq.png[axonlogo,120]
 
 = Recipe
 
-== Simple application using Axon Framework and Spring Boot
+===  Simple application using Axon Framework and Spring Boot
 
 This recipe gives you the basic steps for creating an Axon Framework based application with the use of Spring Boot.
 //The Axon Framework is not tied to Spring. You can find the recipe on how to create a basic Axon application without the use of Spring http://www.axoniq.io[here].
 
 This recipe will focus on the implementation of an Axon application and not the concepts were the Axon Framework is based on. You can find the in dept information on the Axon Framework in the https://docs.axonframework.org/[Axon Framework reference guide]
 
-All the recipes are based on one domain, a bank. Axon Framework with CQRS and eventsourcing applies very well to the domain of a bank. A person wants to open a bank account to deposit and withdraw money from. Over time, the customer wants to see the current state of the account and see which transactions have taken place to get to the current amount. The events that have been applied over time are the basis of the transaction log and the current amount is representation of the state. Next to depositing and withdrawing money, the bank wants to know all changes that have taken place to an account for auditing purposes. The last version of its details is shown to the accountholder, but the bank might want to see the change log, i.e. for auditing purposes, instead of only the last state.
+All the recipes are based on one domain, a bank. Axon Framework with CQRS and event sourcing applies very well to the domain of a bank. A person wants to open a bank account to deposit and withdraw money from. Over time, the customer wants to see the current state of the account and see which transactions have taken place to get to the current amount. The events that have been applied over time are the basis of the transaction log and the current amount is representation of the state. Next to depositing and withdrawing money, the bank wants to know all changes that have taken place to an account for auditing purposes. The last version of its details is shown to the account holder, but the bank might want to see the change log, i.e. for auditing purposes, instead of only the last state.
 
 This recipe will lead you through the first step of creating a bank account and depositing and withdrawing money. The following diagram gives an overview of the classes we will create in the application. The command-side represents the classes related to creating and writing the events. The query-side represents the handling of the events and requests for the projection of the data.
 
-image::overview.png[overview,align="center"]
+image::overview.png[overview,400,400,align="center"]
 
-=== General
+===== General
 - Cooks in: 30 minutes
 - Difficulty: easy
 
-=== Ingredients
-* *Dependencies*
+===== Ingredients
+*Dependencies*
 
 [width="100%",frame="topbot",options="header"]
 |======================
@@ -42,7 +42,7 @@ image::overview.png[overview,align="center"]
 |Kotlin                                 |1.1.X
 |======================
 
-* *Axon Framework components*
+*Axon Framework components*
 
 [width="100%",frame="topbot"]
 |======================
@@ -52,7 +52,7 @@ image::overview.png[overview,align="center"]
 |Event Sourcing handlers
 |======================
 
-=== Method
+===== Method
 
 
 *1 Set up the Spring Boot application*
@@ -201,7 +201,7 @@ public class AccountController {
 }
 ----
 
-We need three commands for our logic of creating an account, depositing and withdrawing money. We will create the `CreateAccountCommand`. `DepositMoneyCommand` and `WithdrawMoneyCommand`. Next to the id of the account the name of the accountholder is saved. The `@TargetAggregateIdentifier` annotation is required for command handling in the aggregate. By using this annotation, Axon knows which aggregate to target when handling the command.
+We need three commands for our logic of creating an account, depositing and withdrawing money. We will create the `CreateAccountCommand`. `DepositMoneyCommand` and `WithdrawMoneyCommand`. Next to the id of the account the name of the account holder is saved. The `@TargetAggregateIdentifier` annotation is required for command handling in the aggregate. By using this annotation, Axon knows which aggregate to target when handling the command.
 
 [source%autofit, java]
 ----
@@ -431,7 +431,7 @@ public static class AccountProjector {
 
 To keep the code concise in this recipe, we save all fields on database entity level. Preferred is an object in between that maps the state representation to a database object. For example `AccountView` and `AccountViewDao`.
 
-Due to running the embedded database in this code exmampe, we need to add a simple constructor to the database object: `constructor() : this(UUID.randomUUID(), null, 0.0) {}`. For now, we just add some dummy data in here.
+Due to running the embedded database in this code example, we need to add a simple constructor to the database object: `constructor() : this(UUID.randomUUID(), null, 0.0) {}`. For now, we just add some dummy data in here.
 
 [source%autofit, java]
 ----
@@ -534,6 +534,29 @@ public static class AccountDataService {
 }
 ----
 
+*6 Run the application*
+
+When all classes are in, we should be able to run the application and fire some commands. We can use https://www.getpostman.com/[Postman] to test the endpoints.
+
+First of all, we need to create the account using the `/accounts` POST endpoint and passing in the name of the account holder. We will get back the generated id of the Account.
+
+image::create_account_postman.png[create_account,align="center"]
+
+As we now have the Account and its id, we can start depositing and withdrawing money from it.
+
+image::deposit_money_postman.png[deposit,align="center"]
+image::withdraw_money_postman.png[withdraw,align="center"]
+
+To check whether the events are handled, we can query the GET endpoints.
+
+image::get_account_by_accountid.png[get_one,align="center"]
+
+And of course, if we add another account and deposit and withdraw some money from that account we should see a list of all accounts of the Axon bank.
+
+image::get_all_accounts.png[get_all,align="center"]
+
+
+
 ====== Other readings and recipes
 By following this recipe, you should be able to run a simple application using Spring Boot and the Axon Framework. Of course, over time the bank will find out that there can be more than one type of bank account that can be created or not all values required for withdraw are in the event. In that case, we will need to change the events and maybe adjust the events. More recipes will follow on how to implement these kind of features and changes within an Axon Framework based application.
 
@@ -544,6 +567,6 @@ By following this recipe, you should be able to run a simple application using S
 //- How to add an Entity under an Aggregate
 //- Axon Framework reference guide
 
-====== For any question about the recipe, please contact
-- http://www.axoniq.io[Axon user group]
+====== For any question about the recipe or Axon Framework in general, please contact us via
+- https://groups.google.com/forum/#!forum/axonframework[Axon user group]
 - http://www.axoniq.io[AxonIQ support]
