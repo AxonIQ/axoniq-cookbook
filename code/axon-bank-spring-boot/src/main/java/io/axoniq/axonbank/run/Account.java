@@ -8,7 +8,6 @@ import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.model.AggregateIdentifier;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.spring.stereotype.Aggregate;
-import org.springframework.util.Assert;
 
 @Aggregate
 public class Account {
@@ -55,12 +54,6 @@ public class Account {
     @EventSourcingHandler
     protected void on(MoneyWithdrawnEvent event) {
         this.balance = balance - event.getAmount();
-    }
-
-    public static void assertArgumentTrue(boolean arg, String message) {
-        if (!arg) {
-            throw new IllegalArgumentException(message);
-        }
     }
 
 }

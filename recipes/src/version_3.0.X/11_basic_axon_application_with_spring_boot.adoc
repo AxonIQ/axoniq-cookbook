@@ -322,7 +322,7 @@ public class Account {
 
     private Double balance;
 
-    // Required for Axon to create the aggregate
+    // Required for Axon to re-create the aggregate
     public Account() {
     }
 
@@ -340,9 +340,9 @@ public class Account {
     public void handle(WithdrawMoneyCommand command) {
         if (balance - command.getAmount() >= 0) {
             apply(new MoneyWithdrawnEvent(command.getAccountId(), command.getAmount()));
+        } else {
+            throw new IllegalArgumentException("Amount to withdraw is bigger than current balance on account");
         }
-
-        // todo add exception handling
     }
 
     @EventSourcingHandler
@@ -362,6 +362,7 @@ public class Account {
     }
 
 }
+
 
 ----
 
