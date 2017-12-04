@@ -6,7 +6,7 @@ src/main/java/io/axoniq/axonbank/read/
 src/main/java/io/axoniq/axonbank/write/
 src/main/resources/static/
 src/main/resources/templates/
-code/axon-bank-spring-boot/.mvn/
-code/axon-bank-spring-boot/src/main/resources/static/
-code/axon-bank-spring-boot/src/main/resources/templates/
+code/11-axon-bank-spring-boot/.mvn/
+code/11-axon-bank-spring-boot/src/main/resources/static/
+code/11-axon-bank-spring-boot/src/main/resources/templates/
 
