@@ -25,9 +25,3 @@ If a new recipe needs to be created for a newer version of the framework, please
 ##### Review
 Make sure on of the team members or colleagues walks through the recipe to check whether the steps are clear and if the code compiles and runs at the end of the recipe
 
-##### Publication
-
-... Something to think about...
-The recipes will be published on the website and shared via newsletters. 
-
-
