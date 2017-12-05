@@ -1,15 +1,3 @@
-*.iml
-.idea/
-localhost/
-
-src/main/java/io/axoniq/axonbank/read/
-src/main/java/io/axoniq/axonbank/write/
-src/main/resources/static/
-src/main/resources/templates/
-code/11-axon-bank-spring-boot/.mvn/
-code/11-axon-bank-spring-boot/src/main/resources/static/
-code/11-axon-bank-spring-boot/src/main/resources/templates/
-
 ### Based on GitBook
 
 # Node rules:
@@ -28,4 +16,3 @@ _book
 *.epub
 *.mobi
 *.pdf
-.gitignore
