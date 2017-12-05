@@ -15,7 +15,7 @@ All the recipes are based on one domain, a bank. Axon Framework with CQRS and ev
 
 This recipe will lead you through the first step of creating a bank account and depositing and withdrawing money. The following diagram gives an overview of the classes we will create in the application. The command-side represents the classes related to creating and writing the events. The query-side represents the handling of the events and requests for the projection of the data.
 
-image:/assets/overview.png[alt="overview",width="100%",align="center"]
+image:assets/overview.png[alt="overview",width="100%",align="center"]
 
 ===== Ingredients
 
