@@ -1,4 +1,4 @@
-//image:/assets/axoniq.png[axonlogo,120,align="center"]
+//image:assets/axoniq.png[axonlogo,120,align="center"]
 
 = Recipe
 
@@ -45,7 +45,7 @@ image:assets/overview.png[alt="overview",width="100%",align="center"]
 For the creation of a simple Spring Boot application you can go to http://start.spring.io[start.spring.io].
 You can configure the application metadata as preferred. In this example we added `Web`, `JPA` and `HSQLDB` as dependencies. After configuring everything you can download the Spring Boot application and load as a project in your preferred IDE.
 
-image:/assets/springio.png[alt="springio",align="center"]
+image:assets/springio.png[alt="springio",align="center"]
 
 *2 Add dependencies*
 
@@ -487,20 +487,20 @@ When all classes are in, we should be able to run the application and fire some 
 
 First of all, we need to create the account using the `/accounts` POST endpoint and passing in the name of the account holder. We will get back the generated id of the Account.
 
-image:/assets/create_account_postman.png[alt="create_account",align="center"]
+image:assets/create_account_postman.png[alt="create_account",align="center"]
 
 As we now have the Account and its id, we can start depositing and withdrawing money from it.
 
-image:/assets/deposit_money_postman.png[alt="deposit",align="center"]
-image:/assets/withdraw_money_postman.png[alt="withdraw",align="center"]
+image:assets/deposit_money_postman.png[alt="deposit",align="center"]
+image:assets/withdraw_money_postman.png[alt="withdraw",align="center"]
 
 To check whether the events are handled, we can query the GET endpoints.
 
-image:/assets/get_account_by_accountid.png[[alt="get_one",align="center"]
+image:assets/get_account_by_accountid.png[[alt="get_one",align="center"]
 
 And of course, if we add another account and deposit and withdraw some money from that account we should see a list of all accounts of the Axon bank.
 
-image:/assets/get_all_accounts.png[alt="get_all",align="center"]
+image:assets/get_all_accounts.png[alt="get_all",align="center"]
 
 ====== Other readings and recipes
 By following this recipe, you should be able to run a simple application using Spring Boot and the Axon Framework. Of course, over time the bank will find out that there can be more than one type of bank account that can be created or not all values required for withdraw are in the event. In that case, we will need to change the events and maybe adjust the events. More recipes will follow on how to implement these kind of features and changes within an Axon Framework based application.
