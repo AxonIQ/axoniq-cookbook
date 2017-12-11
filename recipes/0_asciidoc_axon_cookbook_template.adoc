@@ -1,0 +1,49 @@
+= Recipe
+
+- Cooks in - [] minutes
+- Difficulty - [easy|moderate|advanced]
+
+===  [TITLE]
+[]
+
+//Use of images:
+image:assets/overview.png[alt="overview",width="100%",align="center"]
+
+===== Ingredients
+
+// Insert dependencies here
+[width="100%",frame="topbot",options="header"]
+|======================
+|*Dependency*                           |*Version*
+|[Axon Framework]                         |[3.1.X]
+|======================
+
+// Insert axon framework specific components here
+[width="100%",frame="topbot"]
+|======================
+|*Axon Framework components*
+| [Some Axon Framework Component]
+|======================
+
+===== Method
+
+*1 [title of first step]
+
+// Insert xml code
+[source, xml]
+----
+<!-- Some XML code-->
+----
+
+// Insert Java code
+[source, java]
+----
+// Some Java code
+----
+
+====== Other readings and recipes
+[Some note on other recipes / blogs / etc.]
+
+====== For any question about the recipe or Axon Framework in general, please contact us via
+- https://groups.google.com/forum/#!forum/axonframework[Axon user group]
+- http://www.axoniq.io[AxonIQ support]
