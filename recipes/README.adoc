@@ -8,5 +8,7 @@ The recipes are a guideline on how you can use the Axon Framework. The https://d
 
 If you're interested in helping out building the Axon Framework, check the https://github.com/AxonFramework/AxonFramework[Github] page. Help is always welcome.
 
+If you're interested in helping out writing recipes, check the https://github.com/AxonIQ/axoniq-cookbook[Github] page. Help is always welcome.
+
 For more questions about the Axon Framework or the products of AxonIQ, check the https://axoniq.io/[website] of AxonIQ.
 

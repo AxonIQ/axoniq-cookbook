@@ -6,9 +6,9 @@ src/main/java/io/axoniq/axonbank/read/
 src/main/java/io/axoniq/axonbank/write/
 src/main/resources/static/
 src/main/resources/templates/
-code/11-axon-bank-spring-boot/.mvn/
-code/11-axon-bank-spring-boot/src/main/resources/static/
-code/11-axon-bank-spring-boot/src/main/resources/templates/
+code/11-axon-bank-spring-boot-3.0.X/.mvn/
+code/11-axon-bank-spring-boot-3.0.X/src/main/resources/static/
+code/11-axon-bank-spring-boot-3.0.X/src/main/resources/templates/
 
 ### Based on GitBook
 
