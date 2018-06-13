@@ -10,12 +10,12 @@ Want to adjust one of the recipes or add a new one. Check out the master branch 
 In the version specific folders are all recipes for the cookbook. 
 
 ##### Template for recipes
-Under `/recipes` is a file called `0_asciidoc_axon_cookbook_template.adoc` which contains the template for each of the recipes. 
+Under `/recipes` is a file called `0_asciidoc_axon_cookbook_template.md` which contains the template for each of the recipes. 
 
 If you change something in the template, make sure each of the recipes are still working accordingly. 
 
 ##### Naming
-Please name the recipe including the number of the issue. So, for example ```11_basic_axon_application_with_spring_boot.adoc```
+Please name the recipe including the number of the issue. So, for example ```11_basic_axon_application_with_spring_boot.md```
  
 Issues can be found here: https://github.com/AxonIQ/axoniq-cookbook/projects/1. 
 
